@@ -5,11 +5,13 @@ package com.pmsoluciones.innovacion.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.pmsoluciones.innovacion.dto.ReporteInformeOperativoRequest;
 import com.pmsoluciones.innovacion.service.ReporteService;
 
 import lombok.RequiredArgsConstructor;
@@ -27,9 +29,10 @@ public class ReporteController {
 
 	private final ReporteService service;
 
-	@GetMapping(value = "/reporte1")
-	public ResponseEntity<?> get(@RequestParam(required = false, value = "id") Long id) {
-		log.info("get AlcanceMetrica: {}", id);
-		return service.get(id);
+	@PostMapping(value = "/reporte1")
+	public ResponseEntity<?> get(@RequestBody ReporteInformeOperativoRequest reporteInformeOperativoRequest,
+			@RequestHeader(required = false, value = "Authorization") String token) {
+		log.info("get reporteInformeOperativoRequest: {}", reporteInformeOperativoRequest);
+		return service.get(reporteInformeOperativoRequest, token);
 	}
 }

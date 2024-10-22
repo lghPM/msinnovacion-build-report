@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.pmsoluciones.innovacion.client.ClientRest;
+import com.pmsoluciones.innovacion.dto.ReporteInformeOperativoRequest;
 import com.pmsoluciones.innovacion.service.ReporteService;
 
 import lombok.RequiredArgsConstructor;
@@ -25,8 +26,9 @@ public class ReporteServiceImpl implements ReporteService {
 
 	@Transactional
 	@Override
-	public ResponseEntity<?> get(Long id) {
-		log.info( "Demo:" + id);
+	public ResponseEntity<?> get(ReporteInformeOperativoRequest reporteInformeOperativoRequest, String token) {
+		var informacionTokenDto = clientRest.validarToken(token).getRespuesta();
+		log.info( "get reporte, usuario que consulta IdUsuario {} " , informacionTokenDto.getUsuario().getIdUsuario());
 		return null;
 	}
 
