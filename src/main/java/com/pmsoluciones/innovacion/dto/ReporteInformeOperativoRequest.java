@@ -23,7 +23,5 @@ public class ReporteInformeOperativoRequest implements Serializable {
 	private String refUrlRepos;
 	// LISTA DE PROYECTOS CON UNA LISTA DE METRICAS
 	private List<ProyectoDto> proyectos;
-	private List<MetricasDto> lstAcr;
-	private List<MetricasDto> lstPpb;
 
 }

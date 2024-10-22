@@ -22,5 +22,7 @@ public class ProyectoDto implements Serializable {
     private String cveProyecto;
     private String nomProyecto;
     private  List<MetricaIndicadorDto>metricaIndicadores;
+	private List<MetricasDto> lstAcr;
+	private List<MetricasDto> lstPpb;
 
 }
