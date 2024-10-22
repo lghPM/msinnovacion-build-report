@@ -31,5 +31,9 @@ public class MetricasDto implements Serializable {
 	private String desLcl;
 	private String desMedia;
 	private String desUcl;
+	private String desLclIn;
+	private String desMediaIn;
+	private String desUclIn;
+	private String desUrl;
 
 }

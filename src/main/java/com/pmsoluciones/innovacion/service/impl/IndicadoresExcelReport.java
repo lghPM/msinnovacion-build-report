@@ -1,11 +1,15 @@
 package com.pmsoluciones.innovacion.service.impl;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.List;
 
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -13,81 +17,175 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.pmsoluciones.innovacion.dto.MetricaIndicadorDto;
+import com.pmsoluciones.innovacion.dto.MetricasDto;
+import com.pmsoluciones.innovacion.dto.ProyectoDto;
+import com.pmsoluciones.innovacion.dto.ReporteInformeOperativoRequest;
 import com.pmsoluciones.innovacion.service.ReportAbstract;
 
 @Service
-public class IndicadoresExcelReport extends ReportAbstract{
+public class IndicadoresExcelReport extends ReportAbstract {
 
-	public ResponseEntity<ByteArrayResource> exportToExcel() throws Exception {
-        newReportExcel();
+	public ResponseEntity<ByteArrayResource> exportToExcel(
+			ReporteInformeOperativoRequest reporteInformeOperativoRequest) throws Exception {
+		newReportExcel();
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-        // write sheet, title & header
-        String[] headers = new String[]{"No", "username", "Password", "Roles", "Permission", "Active", "Bloked", "Created By", "Created Date", "Update By", "Update Date"};
-        writeTableHeaderExcel("Sheet User", "Report User", headers);
-
-        Object data = "String";
-
-        writeTableData(data);
-
-        outputStream.close();
-        
-        
-        HttpHeaders header = new HttpHeaders();
-        header.setContentType(new MediaType("application", "force-download"));
-        header.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ProductTemplate.xlsx");
-        workbook.write(outputStream);
-        workbook.close();
-        return new ResponseEntity<>(new ByteArrayResource(outputStream.toByteArray()),
-                header, HttpStatus.CREATED);
-        
-        
-        
-    }
-	
-	public void writeTableData(Object data)  throws Exception {
-     
-        // font style content
-        CellStyle style = getFontContentExcel();
-
-        // starting write on row
-        int startRow = 2;
-
-        // write content
-        
-        for (int i = 0; i < 11; i++) {
-        	Row row = sheet.createRow(startRow++);
-            int columnCount = 0;
-            createCell(row, columnCount++, "test", style);
-            createCell(row, columnCount++, "test", style);
-            createCell(row, columnCount++, "test", style);
-            createCell(row, columnCount++, "test", style);
-            createCell(row, columnCount++, "test", style);
-            createCell(row, columnCount++, "test", style);
-            createCell(row, columnCount++, "test", style);
-            createCell(row, columnCount++, "test", style);
-            createCell(row, columnCount++, "test", style);
-            createCell(row, columnCount++, "test", style);
-            createCell(row, columnCount++, "test", style);
+		for (ProyectoDto proyecto : reporteInformeOperativoRequest.getProyectos()) {
+			sheet = workbook.createSheet(proyecto.getNomProyecto());
+			sheepProyecto(sheet, proyecto, reporteInformeOperativoRequest);
 		}
-        
-//        for (Object UserDTO : list) {
-//            Row row = sheet.createRow(startRow++);
-//            int columnCount = 0;
-//            createCell(row, columnCount++, "test", style);
-//            createCell(row, columnCount++, "test", style);
-//            createCell(row, columnCount++, "test", style);
-//            createCell(row, columnCount++, "test", style);
-//            createCell(row, columnCount++, "test", style);
-//            createCell(row, columnCount++, "test", style);
-//            createCell(row, columnCount++, "test", style);
-//            createCell(row, columnCount++, "test", style);
-//            createCell(row, columnCount++, "test", style);
-//            createCell(row, columnCount++, "test", style);
-//            createCell(row, columnCount++, "test", style);
-//
-//        }
-    }
-	
+
+		outputStream.close();
+
+		HttpHeaders header = new HttpHeaders();
+		header.setContentType(new MediaType("application", "force-download"));
+		header.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ProductTemplate.xlsx");
+		workbook.write(outputStream);
+		workbook.close();
+		return new ResponseEntity<>(new ByteArrayResource(outputStream.toByteArray()), header, HttpStatus.CREATED);
+
+	}
+
+//	CREA HOJAS 
+	void sheepProyecto(XSSFSheet sheep, ProyectoDto proyecto,
+			ReporteInformeOperativoRequest reporteInformeOperativoRequest) {
+		int posRow = 0;
+		posRow = listadoMetricas(sheep, posRow, proyecto, reporteInformeOperativoRequest);
+		posRow += 1;
+		posRow = listadoPpb(sheep, posRow, proyecto.getLstPpb());
+		posRow += 1;
+		posRow = listadoAcr(sheep, posRow, proyecto.getLstAcr());
+	}
+
+	Integer listadoMetricas(XSSFSheet sheep, Integer posRow, ProyectoDto proyecto,
+			ReporteInformeOperativoRequest reporteInformeOperativoRequest) {
+
+		Integer mergeCols = 3;
+
+		String[] headers = new String[] { "ID y Nombre del informe", reporteInformeOperativoRequest.getNomInforme(),
+				"Periodo",
+				reporteInformeOperativoRequest.getFecFin() + " - " + reporteInformeOperativoRequest.getFecFin(), };
+		writeTableHeaderExcel(headers, posRow, mergeCols);
+		posRow += 1;
+		String[] headers2 = new String[] { "Nombre del proyecto o servicio", proyecto.getNomProyecto(), "URL",
+				reporteInformeOperativoRequest.getRefUrlRepos() };
+		writeTableHeaderExcel(headers2, posRow, mergeCols);
+
+		posRow += 1;
+
+		// gerenar listado de meses
+		String[] headers3 = new String[] { "Indicadores" };
+		Boolean isMerge = false;
+		writeTableHeaderExcel(headers3, posRow, mergeCols, isMerge);
+		posRow += 1;
+		// data metricas proyecto.metricas
+
+		for (MetricaIndicadorDto metrica : proyecto.getMetricaIndicadores()) {
+
+			Row row = sheet.createRow(posRow);
+			int columnCount = 0;
+
+			CellStyle style = getFontContentExcel();
+
+			createCell(row, columnCount++, metrica.getNomMetrica(), style);
+
+			posRow += 1;
+
+		}
+
+		return posRow;
+	}
+
+	Integer listadoAcr(XSSFSheet sheep, Integer posRow, List<MetricasDto> lstMetricas) {
+
+		
+		String[] headers1 = new String[] { "ACR" };
+
+		Integer mergeCols = 12;
+		writeTableHeaderExcel(headers1, posRow, mergeCols);
+		posRow += 1;
+		String[] headers = new String[] { "Fecha", "Nombre Metrica", "Nombre documento", "URL", };
+
+		mergeCols = 3;
+		writeTableHeaderExcel(headers, posRow, mergeCols);
+		posRow += 1;
+		CellStyle style = workbook.createCellStyle();
+		style.setAlignment(HorizontalAlignment.LEFT);
+		for (MetricasDto metrica : lstMetricas) {
+
+			Row row = sheet.createRow(posRow);
+			int columnCount = 0;
+
+			createCell(row, columnCount, metrica.getFechaDoc(), style);
+			columnCount += 1;
+			createCell(row, columnCount, metrica.getNomDoc(), style);
+			sheet.addMergedRegion(new CellRangeAddress(posRow, posRow, columnCount, columnCount + mergeCols));
+			columnCount = columnCount + mergeCols + 1;
+			createCell(row, columnCount, metrica.getNomDoc(), style);
+			sheet.addMergedRegion(new CellRangeAddress(posRow, posRow, columnCount, columnCount + mergeCols));
+			columnCount = columnCount + mergeCols + 1;
+			createCell(row, columnCount, metrica.getDesUrl(), style);
+			sheet.addMergedRegion(new CellRangeAddress(posRow, posRow, columnCount, columnCount + mergeCols));
+			columnCount = columnCount + mergeCols + 1;
+
+			posRow += 1;
+
+		}
+
+		return posRow;
+
+	}
+
+	Integer listadoPpb(XSSFSheet sheep, Integer posRow, List<MetricasDto> lstMetricas) {
+
+		for (MetricasDto metrica : lstMetricas) {
+
+			String[] headers = new String[] { "Metrica: " + metrica.getNomMetrica(), "LSL", "Media", "USL", };
+
+			Integer mergeCols = 2;
+			writeTableHeaderExcel(headers, posRow, mergeCols);
+			posRow += 1;
+
+			Row row = sheet.createRow(posRow);
+			int columnCount = 0;
+
+			CellStyle style = getFontContentExcel();
+
+			createCell(row, columnCount, "Linea base de desempeño", style);
+
+			columnCount += 1;
+			createCell(row, columnCount, metrica.getDesLcl(), style);
+			sheet.addMergedRegion(new CellRangeAddress(posRow, posRow, columnCount, columnCount + mergeCols));
+			columnCount = columnCount + mergeCols + 1;
+			createCell(row, columnCount, metrica.getDesMedia(), style);
+			sheet.addMergedRegion(new CellRangeAddress(posRow, posRow, columnCount, columnCount + mergeCols));
+			columnCount = columnCount + mergeCols + 1;
+			createCell(row, columnCount, metrica.getDesUcl(), style);
+			sheet.addMergedRegion(new CellRangeAddress(posRow, posRow, columnCount, columnCount + mergeCols));
+
+			posRow += 1;
+			row = sheet.createRow(posRow);
+			columnCount = 0;
+			createCell(row, columnCount, "Desempeño del proyecto", style);
+			columnCount += 1;
+			createCell(row, columnCount, metrica.getDesLclIn(), style);
+			sheet.addMergedRegion(new CellRangeAddress(posRow, posRow, columnCount, columnCount + mergeCols));
+			columnCount = columnCount + mergeCols + 1;
+			createCell(row, columnCount, metrica.getDesMediaIn(), style);
+			sheet.addMergedRegion(new CellRangeAddress(posRow, posRow, columnCount, columnCount + mergeCols));
+			columnCount = columnCount + mergeCols + 1;
+			createCell(row, columnCount, metrica.getDesUclIn(), style);
+			sheet.addMergedRegion(new CellRangeAddress(posRow, posRow, columnCount, columnCount + mergeCols));
+			columnCount = columnCount + mergeCols + 1;
+
+			posRow += 1;
+
+		}
+
+		return posRow;
+
+	}
+
 }

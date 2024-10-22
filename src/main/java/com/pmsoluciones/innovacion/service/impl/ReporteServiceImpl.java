@@ -35,9 +35,9 @@ private  final  IndicadoresExcelReport userExportToExcelService;
 		var informacionTokenDto = clientRest.validarToken(token).getRespuesta();
 		log.info( "get reporte, usuario que consulta IdUsuario {} " , informacionTokenDto.getUsuario().getIdUsuario());
 		try {
-			return  userExportToExcelService.exportToExcel();
+			return  userExportToExcelService.exportToExcel(reporteInformeOperativoRequest);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 		return (ResponseEntity<?>) ResponseEntity.noContent();
 	}

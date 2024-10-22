@@ -4,8 +4,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -31,38 +33,54 @@ public  abstract class ReportAbstract {
         response.setHeader(headerKey, headerValue);
         return response;
     }
-
-    public void writeTableHeaderExcel(String sheetName, String titleName, String[] headers) {
+    public void writeTableHeaderExcel( String[] headers,Integer rowPos, Integer mergeCols) {
+    	this.writeTableHeaderExcel( headers,rowPos, mergeCols ,false);
+    }
+    
+//    GENERA LOS HEADER
+    public void writeTableHeaderExcel( String[] headers,Integer posRow, Integer mergeCols ,boolean isMerge) {
 
         // sheet
-        sheet = workbook.createSheet(sheetName);
-        org.apache.poi.ss.usermodel.Row row = sheet.createRow(0);
+//        sheet = workbook.createSheet(sheetName);
+        Row row = sheet.createRow(posRow);
+		
         CellStyle style = workbook.createCellStyle();
         XSSFFont font = workbook.createFont();
         font.setBold(true);
-        font.setFontHeight(20);
+       
         style.setFont(font);
         style.setAlignment(HorizontalAlignment.CENTER);
-
-
-        // title
-        createCell(row, 0, titleName, style);
-        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, headers.length - 1));
-        font.setFontHeightInPoints((short) 10);
-
-        // header
-        row = sheet.createRow(1);
-        font.setBold(true);
-        font.setFontHeight(16);
-        style.setFont(font);
-        for (int i = 0; i < headers.length; i++) {
-            createCell(row, i, headers[i], style);
+                
+        Integer celPos = 0;
+        
+        
+        if(headers.length == 1) {
+        	createCell(row, celPos, headers[0], style);
+        	if(!isMerge) {
+        		sheet.addMergedRegion(new CellRangeAddress(posRow, posRow, celPos, celPos + mergeCols));
+            	celPos = celPos + mergeCols+1;
+        	}
+        }else {
+        	for (String tituloH : headers) {
+            	createCell(row, celPos, tituloH, style);
+            	
+            	if(celPos > 0 && !isMerge) {
+            		sheet.addMergedRegion(new CellRangeAddress(posRow, posRow, celPos, celPos + mergeCols));
+                	celPos = celPos + mergeCols+1;
+            	}else {
+            		celPos =+1;
+            	}
+            	
+    		}
         }
+        
+        
+      
     }
 
     public void createCell(org.apache.poi.ss.usermodel.Row row, int columnCount, Object value, CellStyle style) {
         sheet.autoSizeColumn(columnCount);
-        org.apache.poi.ss.usermodel.Cell cell = row.createCell(columnCount);
+        Cell cell = row.createCell(columnCount);
         if (value instanceof Integer) {
             cell.setCellValue((Integer) value);
         } else if (value instanceof Double) {
