@@ -1,0 +1,55 @@
+server:
+  port: 7021
+  servlet:
+    contextPath: /msinnovacion-build-report
+
+spring:
+  jackson:
+    time-zone: ${TZ:America/Mexico_City}
+  application:
+    name: msinnovacion-build-report    
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: ${HostBD:jdbc:postgresql://10.166.0.58:5432/innovaciondev}
+    username: ${UsrBD:innovdev_user}
+    password: ${PwdBD:innovdev_u534}
+    timeBetweenEvictionRunsMillis: 1000
+    testWhileIdle: true
+    validationQuery: SELECT 1
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+
+  main:
+    allow-circular-references: true
+
+  jpa:
+    show-sql: true
+    use_sql_comments: true
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    dialect: org.hibernate.dialect.PostgreSQLDialect
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info, health
+  endpoint:
+    health:
+      show-details: always
+logging:
+  file:
+    name: ${locationLog:/home/admin2/innovacion/innovacion-files/dev/logs/msinnovacion-build-report/reportes.log}
+
+api:
+  webservices:
+    msValidarToken: ${msValidarToken:http://10.166.0.57:7015/msteam-login/v1/validateToken}
+jwt:
+  secret: ${secretToken:ZnJhc2VzbGFyZ2FzcGFyYWNvbG9jYXJjb21vY2xhdmVlbnVucHJvamVjdG9kZWVtZXBsb3BhcmFqd3Rjb25zcHJpbmdzZWN1cml0eQ==bWlwcnVlYmFkZWVqbXBsb3BhcmFiYXNlNjQ=}
