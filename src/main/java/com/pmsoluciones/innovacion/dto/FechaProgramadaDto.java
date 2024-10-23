@@ -20,10 +20,10 @@ public class FechaProgramadaDto implements Serializable {
 	private static final long serialVersionUID = -4936628436357614639L;
 
 	private Long id;
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-	private LocalDate fecProgramada;
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-	private LocalDate fecRecoleccion;
+//	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+	private String fecProgramada;
+//	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+	private String fecRecoleccion;
 	private BigDecimal numResultMetrica;
 
 }

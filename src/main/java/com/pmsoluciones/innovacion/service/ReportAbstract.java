@@ -1,8 +1,10 @@
 package com.pmsoluciones.innovacion.service;
 
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -33,12 +35,12 @@ public  abstract class ReportAbstract {
         response.setHeader(headerKey, headerValue);
         return response;
     }
-    public void writeTableHeaderExcel( String[] headers,Integer rowPos, Integer mergeCols) {
-    	this.writeTableHeaderExcel( headers,rowPos, mergeCols ,false);
+    public void writeTableHeaderExcel( List<String> headers,Integer rowPos, Integer mergeCols) {
+    	this.writeTableHeaderExcel( headers,rowPos, mergeCols ,true);
     }
     
 //    GENERA LOS HEADER
-    public void writeTableHeaderExcel( String[] headers,Integer posRow, Integer mergeCols ,boolean isMerge) {
+    public void writeTableHeaderExcel(List<String> headers,Integer posRow, Integer mergeCols ,boolean isMerge) {
 
         // sheet
 //        sheet = workbook.createSheet(sheetName);
@@ -54,9 +56,9 @@ public  abstract class ReportAbstract {
         Integer celPos = 0;
         
         
-        if(headers.length == 1) {
-        	createCell(row, celPos, headers[0], style);
-        	if(!isMerge) {
+        if(headers.size() == 1) {
+        	createCell(row, celPos, headers.get(0), style);
+        	if(isMerge) {
         		sheet.addMergedRegion(new CellRangeAddress(posRow, posRow, celPos, celPos + mergeCols));
             	celPos = celPos + mergeCols+1;
         	}
@@ -64,11 +66,11 @@ public  abstract class ReportAbstract {
         	for (String tituloH : headers) {
             	createCell(row, celPos, tituloH, style);
             	
-            	if(celPos > 0 && !isMerge) {
+            	if(celPos > 0 && isMerge) {
             		sheet.addMergedRegion(new CellRangeAddress(posRow, posRow, celPos, celPos + mergeCols));
                 	celPos = celPos + mergeCols+1;
             	}else {
-            		celPos =+1;
+            		celPos +=1;
             	}
             	
     		}
@@ -89,7 +91,10 @@ public  abstract class ReportAbstract {
             cell.setCellValue((Boolean) value);
         } else if (value instanceof Long) {
             cell.setCellValue((Long) value);
-        } else {
+        }else if (value instanceof BigDecimal){
+            cell.setCellValue( (String) value.toString());
+        } 
+        else {
             cell.setCellValue((String) value);
         }
         cell.setCellStyle(style);
